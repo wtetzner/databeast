@@ -86,21 +86,72 @@ module Match =
       
   let (|PropertyAccess|_|) (e:Expression) =
     match e with
-     | MemberAccess (name, obj, mem) -> if mem.MemberType = MemberTypes.Property
-                                          then Some (name, obj, mem)
-                                          else None
+     | MemberAccess (name, obj, mem) ->
+         if mem.MemberType = MemberTypes.Property
+           then Some (name, obj, mem)
+           else None
      | _ -> None
 
   let (|FieldAccess|_|) (e:Expression) =
     match e with
-     | MemberAccess (name, obj, mem) -> if mem.MemberType = MemberTypes.Field
-                                          then Some (name, obj, mem)
-                                          else None
+     | MemberAccess (name, obj, mem) ->
+         if mem.MemberType = MemberTypes.Field
+           then Some (name, obj, mem)
+           else None
      | _ -> None
 
   let (|Where|_|) (e:Expression) =
     match e with
-     | MethodCall ("Where", m, o, a) -> Some (m, o, a)
+     | MethodCall ("Where", m, o, a) -> Some (m, o, a.Item 0)
      | _ -> None
 
+  let (|Select|_|) (e:Expression) =
+    match e with
+     | MethodCall ("Select", m, o, a) -> Some (m, o, a.Item 0)
+     | _ -> None
 
+  let (|SelectMany|_|) (e:Expression) =
+    match e with
+     | MethodCall ("SelectMany", m, o, a) -> Some (m, o, a)
+     | _ -> None
+
+  let (|Aggregate|_|) (e:Expression) =
+    match e with
+     | MethodCall ("Aggregate", m, o, a) -> Some (m, o, a)
+     | _ -> None
+
+  let (|Constant|_|) (e:Expression) =
+    if e :? ConstantExpression
+      then let c = e :?> ConstantExpression
+             in Some (c.Type.Name, c.Type, c.Value)
+      else None
+
+  let (|AndAlso|_|) (e:Expression) =
+    if e.NodeType = ExpressionType.AndAlso
+      then match e with
+            | BinaryExpression (l, r) -> Some (l, r)
+            | _ -> None
+      else None
+
+  let (|OrElse|_|) (e:Expression) =
+    if e.NodeType = ExpressionType.OrElse
+      then match e with
+            | BinaryExpression (l, r) -> Some (l, r)
+            | _ -> None
+      else None
+
+  let (|Parameter|_|) (e:Expression) =
+    match e with
+     | MemberAccess (n, e, m) ->
+         if e.NodeType = ExpressionType.Parameter
+           then let par = e :?> ParameterExpression
+                  in Some (par.Name, par.Type)
+           else None
+     | _ -> None
+
+  let (|Index|_|) (e:Expression) =
+    match e with
+     | MethodCall ("get_Item", m, o, a) -> Some (o, a.Item 0)
+     | _ -> None
+
+     
