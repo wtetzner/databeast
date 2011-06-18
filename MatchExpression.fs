@@ -83,7 +83,7 @@ module Match =
       then let mem = e :?> MemberExpression
              in Some (mem.Member.Name, mem.Expression, mem.Member)
       else None
-
+      
   let (|PropertyAccess|_|) (e:Expression) =
     match e with
      | MemberAccess (name, obj, mem) -> if mem.MemberType = MemberTypes.Property
