@@ -61,6 +61,11 @@ module Translate =
                               else translate_to_mysql o
      | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
+  let evaluate (e:Expression) =
+    match e with
+      | Constant (c, tname, t, o) -> o
+      | _ -> Expression.Lambda(e).Compile().DynamicInvoke(null)
+
   let translate_to_sqlserver (e:Expression) =
     failwith "Dbms 'SqlServer' is currently unsupported."
 

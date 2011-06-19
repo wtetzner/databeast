@@ -163,7 +163,7 @@ module Match =
   let (|FreeVariable|_|) (e:Expression) =
     if e :? MemberExpression
       then let m = e :?> MemberExpression
-             in if m.NodeType <> ExpressionType.Parameter
+             in if m.Expression.NodeType <> ExpressionType.Parameter
                   then Some (m, m.Member.Name, m.Expression, m.Member)
                   else None
       else None
