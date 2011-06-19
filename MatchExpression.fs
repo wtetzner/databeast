@@ -26,7 +26,7 @@ module Match =
             | _ -> None
       else None
 
-  let (|GreaterThen|_|) (e:Expression) =
+  let (|GreaterThan|_|) (e:Expression) =
     if e.NodeType = ExpressionType.GreaterThan
       then match e with
             | Binary (e, t, l, r) -> Some (e, l, r)
@@ -63,7 +63,7 @@ module Match =
   let (|Not|_|) (e:Expression) =
     if e.NodeType = ExpressionType.Not
       then match e with
-            | Unary (e, t, o) -> Some (e, t, o)
+            | Unary (e, t, o) -> Some (e, o)
             | _ -> None
       else None
 
@@ -105,12 +105,12 @@ module Match =
 
   let (|Where|_|) (e:Expression) =
     match e with
-     | MethodCall (e, "Where", m, o, a) -> Some (e, m, o, a.Item 0)
+     | MethodCall (e, "Where", m, o, a) -> Some (e, a.First(), a.Skip(1).First())
      | _ -> None
 
   let (|Select|_|) (e:Expression) =
     match e with
-     | MethodCall (e, "Select", m, o, a) -> Some (e, m, o, a.Item 0)
+     | MethodCall (e, "Select", m, o, a) -> Some (e, m, o, a.Item 1)
      | _ -> None
 
   let (|SelectMany|_|) (e:Expression) =
@@ -191,9 +191,9 @@ module Match =
 
   let (|DatabaseTable|_|) (e:Expression) =
     match e with
-     | IQueryable (e, o) -> if o :? DatabaseTable
-                                        then Some (e, o :?> DatabaseTable)
-                                        else None
+     | IQueryable (e, o) -> if o :? IDatabaseTable
+                              then Some (e, o :?> IDatabaseTable)
+                              else None
      | _ -> None
 
   let (|New|_|) (e:Expression) =
@@ -207,4 +207,11 @@ module Match =
      | Unary (e, t, o) -> if t = ExpressionType.Quote
                             then Some (e, t, o)
                             else None
+     | _ -> None
+
+  let (|NULL|_|) (e:Expression) =
+    match e with
+     | Constant (e, tname, t, o) -> if o = null
+                                      then Some (e)
+                                      else None
      | _ -> None

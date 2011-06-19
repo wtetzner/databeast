@@ -7,7 +7,7 @@ type Dbms =
    | MySql = 2u
    | PostgreSql = 3u
 
-type DatabaseTable =
+type IDatabaseTable =
   interface
     inherit IQueryable
     abstract TableName : String

@@ -24,11 +24,41 @@ module Translate =
      | New (e, cons, args, mem) -> Expression.New(cons, strip_quotes_in_list args, mem) :> Expression
      | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
-  let translate_to_mysql (e:Expression) =
+  let rec translate_to_mysql (e:Expression) =
     match e with
-     | StringConstant (e, str) -> String.Format ("'{0}'", str.Replace("'", "''"))
-     | NumberConstant (e, num) -> num.ToString()
+     | NULL (e) -> "NULL"
+     | Quote (e, t, o) -> translate_to_mysql o
      | DatabaseTable (e, table) -> table.TableName
+     | Constant (c, tname, t, o) -> "?" //o.ToString()
+     | Equal (e, l, r) -> match (l, r) with
+                           | (NULL l, r) -> String.Format ("{0} IS NULL", translate_to_mysql r)
+                           | (l, NULL r) -> String.Format ("{0} IS NULL", translate_to_mysql l)
+                           | _ -> String.Format ("{0} = {1}", translate_to_mysql l, translate_to_mysql r)
+     | NotEqual (e, l, r) -> match (l, r) with
+                              | (NULL l, r) -> String.Format ("{0} IS NOT NULL", translate_to_mysql r)
+                              | (l, NULL r) -> String.Format ("{0} IS NOT NULL", translate_to_mysql l)
+                              | _ -> String.Format ("{0} <> {1}", translate_to_mysql l, translate_to_mysql r)
+     | LessThan (e, l, r) -> String.Format ("{0} < {1}", translate_to_mysql l, translate_to_mysql r)
+     | GreaterThan (e, l, r) -> String.Format ("{0} > {1}", translate_to_mysql l, translate_to_mysql r)
+     | LessOrEqual (e, l, r) -> String.Format ("{0} <= {1}", translate_to_mysql l, translate_to_mysql r)
+     | GreaterOrEqual (e, l, r) -> String.Format ("{0} >= {1}", translate_to_mysql l, translate_to_mysql r)
+     | Not (e, o) -> String.Format ("NOT {0}", translate_to_mysql o)
+     | Where (e, o, a) -> String.Format ("SELECT * FROM {0} WHERE {1}",
+                                         (match o with
+                                           | DatabaseTable (e, table) -> translate_to_mysql o
+                                           | _ -> String.Format ("({0})", translate_to_mysql o)),
+                                         translate_to_mysql a)
+     | Lambda (e, ps, body) -> translate_to_mysql body
+     | Index (e, o, StringConstant (sc, idx)) -> idx
+     | FreeVariable (e, n, o, m) -> "?"
+     | Call (e, "First", o, a) -> String.Format ("SELECT * FROM {0} LIMIT 1",
+                                                 let exp = a.Item 0
+                                                   in match exp with
+                                                       | DatabaseTable (e, table) -> translate_to_mysql exp
+                                                       | _ -> String.Format ("({0})", translate_to_mysql exp))
+     | Call (e, n, o, a) -> if o = null
+                              then translate_to_mysql (a.Item 0)
+                              else translate_to_mysql o
      | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
   let translate_to_sqlserver (e:Expression) =
