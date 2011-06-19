@@ -5,8 +5,10 @@ open org.bovinegenius.DataBeast.Expression.Match
 open System.Linq.Expressions
 open System.Linq
 open System
-
+ 
 module Translate =
+  type sql_translation = Sql of String * Object list
+
   let rec strip_quotes_in_list (e:IEnumerable<Expression>) =
     (e.Select (fun x -> strip_quotes x)).ToArray()
 
@@ -23,13 +25,17 @@ module Translate =
      | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
   let translate_to_mysql (e:Expression) =
-    ""
+    match e with
+     | StringConstant (e, str) -> String.Format ("'{0}'", str.Replace("'", "''"))
+     | NumberConstant (e, num) -> num.ToString()
+     | DatabaseTable (e, table) -> table.TableName
+     | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
   let translate_to_sqlserver (e:Expression) =
-    ""
+    failwith "Dbms 'SqlServer' is currently unsupported."
 
   let translate_to_postgresql (e:Expression) =
-    ""
+    failwith "Dbms 'PostgreSQL' is currently unsupported."
 
   let translate_to_sql (dbms:Dbms) (e:Expression) =
     match dbms with

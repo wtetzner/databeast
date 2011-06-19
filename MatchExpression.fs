@@ -1,5 +1,7 @@
 ﻿namespace org.bovinegenius.DataBeast.Expression
+open org.bovinegenius.DataBeast
 open System.Linq.Expressions
+open System.Linq
 open System.Reflection;
 open System
 
@@ -169,8 +171,29 @@ module Match =
   let (|StringConstant|_|) (e:Expression) =
     match e with
      | Constant (e, tname, t, o) -> if o :? String
-                                      then Some (e, tname, t, o)
+                                      then Some (e, o :?> String)
                                       else None
+     | _ -> None
+
+  let (|NumberConstant|_|) (e:Expression) =
+    match e with
+     | Constant (e, tname, t, o) -> if o :? int || o :? float || o :? double || o :? byte
+                                      then Some (e, o)
+                                      else None
+     | _ -> None
+
+  let (|IQueryable|_|) (e:Expression) =
+    match e with
+     | Constant (e, tname, t, o) -> if o :? IQueryable
+                                      then Some (e, o :?> IQueryable)
+                                      else None
+     | _ -> None
+
+  let (|DatabaseTable|_|) (e:Expression) =
+    match e with
+     | IQueryable (e, o) -> if o :? DatabaseTable
+                                        then Some (e, o :?> DatabaseTable)
+                                        else None
      | _ -> None
 
   let (|New|_|) (e:Expression) =

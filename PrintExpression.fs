@@ -14,7 +14,7 @@ module PrintExpression =
 
   and print_exp (e:Expression) =
     match e with
-     | StringConstant (e, tname, t, o) -> String.Format ("\"{0}\"", o.ToString().Replace("\"", "\\\""))
+     | StringConstant (e, o) -> String.Format ("\"{0}\"", o.ToString().Replace("\"", "\\\""))
      | Constant (e, typeName, t, o) -> String.Format ("(Constant:{0} {1})", typeName, o.ToString())
      | Index (e, o, arg) -> String.Format("{0}[{1}]", o.ToString(), print_exp arg)
      | FreeVariable (e, name, o, mem) -> String.Format ("{0}", name)

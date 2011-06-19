@@ -34,8 +34,8 @@
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <ItemGroup>
-    <Compile Include="MatchExpression.fs" />
     <Compile Include="Database.fs" />
+    <Compile Include="MatchExpression.fs" />
     <Compile Include="TranslateExpression.fs" />
     <Compile Include="PrintExpression.fs" />
     <None Include="TestScript.fsx" />
