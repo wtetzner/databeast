@@ -7,7 +7,7 @@ module Match =
   let (|Binary|_|) (e:Expression) =
     if e :? BinaryExpression
       then let bin = e :?> BinaryExpression
-             in Some (e, bin.NodeType, bin.Left, bin.Right)
+             in Some (bin, bin.NodeType, bin.Left, bin.Right)
       else None
 
   let (|Equal|_|) (e:Expression) =
@@ -55,7 +55,7 @@ module Match =
   let (|Unary|_|) (e:Expression) =
     if e :? UnaryExpression
       then let un = e :?> UnaryExpression
-             in Some (e, un.NodeType, un.Operand)
+             in Some (un, un.NodeType, un.Operand)
       else None
 
   let (|Not|_|) (e:Expression) =
@@ -68,7 +68,7 @@ module Match =
   let (|MethodCall|_|) (e:Expression) =
     if e :? MethodCallExpression
       then let c = e :?> MethodCallExpression
-             in Some (e, c.Method.Name, c.Method, c.Object, c.Arguments)
+             in Some (c, c.Method.Name, c.Method, c.Object, c.Arguments)
       else None
       
   let (|Call|_|) (e:Expression) =
@@ -82,7 +82,7 @@ module Match =
     if e.NodeType = ExpressionType.MemberAccess
        && e :? MemberExpression
       then let mem = e :?> MemberExpression
-             in Some (e, mem.Member.Name, mem.Expression, mem.Member)
+             in Some (mem, mem.Member.Name, mem.Expression, mem.Member)
       else None
       
   let (|PropertyAccess|_|) (e:Expression) =
@@ -124,7 +124,7 @@ module Match =
   let (|Constant|_|) (e:Expression) =
     if e :? ConstantExpression
       then let c = e :?> ConstantExpression
-             in Some (e, c.Type.Name, c.Type, c.Value)
+             in Some (c, c.Type.Name, c.Type, c.Value)
       else None
 
   let (|AndAlso|_|) (e:Expression) =
@@ -144,7 +144,7 @@ module Match =
   let (|Parameter|_|) (e:Expression) =
     if e.NodeType = ExpressionType.Parameter
       then let par = e :?> ParameterExpression
-             in Some (e, par.Name, par.Type)
+             in Some (par, par.Name, par.Type)
       else None
 
   let (|Index|_|) (e:Expression) =
@@ -155,14 +155,14 @@ module Match =
   let (|Lambda|_|) (e:Expression) =
     if e :? LambdaExpression
       then let l = e :?> LambdaExpression
-             in Some (e, l.Parameters, l.Body)
+             in Some (l, l.Parameters, l.Body)
       else None
 
   let (|FreeVariable|_|) (e:Expression) =
     if e :? MemberExpression
       then let m = e :?> MemberExpression
              in if m.NodeType <> ExpressionType.Parameter
-                  then Some (e, m.Member.Name, m.Expression, m.Member)
+                  then Some (m, m.Member.Name, m.Expression, m.Member)
                   else None
       else None
 
@@ -176,7 +176,7 @@ module Match =
   let (|New|_|) (e:Expression) =
     if e :? NewExpression
       then let n = e :?> NewExpression
-             in Some (e, n.Constructor, n.Arguments, n.Members)
+             in Some (n, n.Constructor, n.Arguments, n.Members)
       else None
 
   let (|Quote|_|) (e:Expression) =
