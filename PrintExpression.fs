@@ -18,7 +18,9 @@ module PrintExpression =
      | Constant (typeName, t, o) -> String.Format ("(Constant:{0} {1})", typeName, o.ToString())
      | Index (o, arg) -> String.Format("{0}[{1}]", o.ToString(), print_exp arg)
      | FreeVariable (name, o, mem) -> String.Format ("{0}", name)
-     | MethodCall (name, m, o, args) -> String.Format ("{1}.{0}({2}))", name, (if o = null then m.DeclaringType.Name else (o.ToString())), print_exps (args.ToList()))
+     | MethodCall (name, m, o, args) -> if o = null
+                                          then String.Format ("{1}.{0}({2}))", name, print_exp (args.Item 0), print_exps (args.Skip(1).ToList()))
+                                          else String.Format ("{1}.{0}({2})", name, print_exp o, print_exps (args.ToList()))
      | Binary (t, l, r) -> String.Format ("{1} {0} {2}", t.ToString(), print_exp l, print_exp r)
      | UnaryExpression (t, o) -> String.Format ("{0}({1})", t.ToString(), print_exp o)
      | Lambda (args, body) -> String.Format ("(fun ({0}) -> {1})", print_exps (args.Cast<Expression>().ToList()), print_exp body)
