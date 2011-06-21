@@ -49,23 +49,23 @@ and public DatabaseTableQuery<'a>(provider:IQueryProvider, expression:Expression
       member x.GetEnumerator() = (provider.Execute(expression) :?> IEnumerable).GetEnumerator()
   end
 
-and public DatabaseTable<'a>(tableName:String, database:Database) as this =
+and public DatabaseTable<'a>(dbms:Dbms, tableName:String, database:Database) as this =
   class
-    inherit DatabaseTableQuery<'a>(new DatabaseTableQueryProvider<'a>(database), Expression.Constant(this))
+    inherit DatabaseTableQuery<'a>(new DatabaseTableQueryProvider<'a>(dbms, database), Expression.Constant(this))
       member x.Expression = Expression.Constant(x) :> Expression
       member x.ElementType = typedefof<'a>
-      member x.Provider = new DatabaseTableQueryProvider<'a>(database) :> IQueryProvider
+      member x.Provider = new DatabaseTableQueryProvider<'a>(dbms, database) :> IQueryProvider
     interface IDatabaseTable with
       member x.TableName = tableName
       member x.Database = database
   end
 
-and public DatabaseTableQueryProvider<'a>(database:Database) as this =
+and public DatabaseTableQueryProvider<'a>(dbms:Dbms , database:Database) as this =
   class
     interface IQueryProvider with
       member x.Execute<'TResult> (e:Expression) = this.Execute(e) :?> 'TResult
       member x.Execute (e:Expression) = this.Execute(e)
       member x.CreateQuery<'TElement> (e:Expression) = new DatabaseTableQuery<'TElement>(x, e) :> IQueryable<'TElement>
       member x.CreateQuery (e:Expression) = new DatabaseTableQuery<'a>(x, e) :> IQueryable
-    member x.Execute (e:Expression) = "" :> obj
+    member x.Execute (e:Expression) = "" :> obj // Yes, this returns the wrong thing. It will be fixed when 'Database' is implemented.
   end
