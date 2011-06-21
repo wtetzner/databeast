@@ -1,5 +1,7 @@
 ﻿namespace org.bovinegenius.DataBeast
 open System
+open System.Collections.Generic
+open System.Collections
 open System.Linq
 open System.Linq.Expressions
 
@@ -20,17 +22,19 @@ and IDatabaseTable =
     abstract Database : Database
   end
 
-and public DatabaseTableQuery(provider:IQueryProvider, expression:Expression, t:Type) =
+and public DatabaseTableQuery<'a>(provider:IQueryProvider, expression:Expression) =
   class
-    interface IQueryable with
-      member x.ElementType = t
+    interface IQueryable<'a> with
+      member x.ElementType = typedefof<'a>
       member x.Expression = expression
-      member x.Provider = provider  
+      member x.Provider = provider
+      member x.GetEnumerator() = (provider.Execute(expression) :?> IEnumerable<'a>).GetEnumerator()
+      member x.GetEnumerator() = (provider.Execute(expression) :?> IEnumerable).GetEnumerator()
   end
 
 and public DatabaseTable<'a>(tableName:String, database:Database) as this =
   class
-    inherit DatabaseTableQuery(new DatabaseTableQueryProvider<'a>(database), Expression.Constant(this), typedefof<'a>)
+    inherit DatabaseTableQuery<'a>(new DatabaseTableQueryProvider<'a>(database), Expression.Constant(this))
       member x.Expression = Expression.Constant(x) :> Expression
       member x.ElementType = typedefof<'a>
       member x.Provider = new DatabaseTableQueryProvider<'a>(database) :> IQueryProvider
@@ -39,9 +43,12 @@ and public DatabaseTable<'a>(tableName:String, database:Database) as this =
       member x.Database = database
   end
 
-and public DatabaseTableQueryProvider<'a>(database:Database) =
+and public DatabaseTableQueryProvider<'a>(database:Database) as this =
   class
     interface IQueryProvider with
-      member x.CreateQuery (e:Expression) = new DatabaseTableQuery(x, e, typedefof<'a>) :> IQueryable
-      member x.Execute<'TResult> (e:Expression) = "" :> TResult
+      member x.Execute<'TResult> (e:Expression) = this.Execute(e) :?> 'TResult
+      member x.Execute (e:Expression) = this.Execute(e)
+      member x.CreateQuery<'TElement> (e:Expression) = new DatabaseTableQuery<'TElement>(x, e) :> IQueryable<'TElement>
+      member x.CreateQuery (e:Expression) = new DatabaseTableQuery<'a>(x, e) :> IQueryable
+    member x.Execute (e:Expression) = "" :> obj
   end
