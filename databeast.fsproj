@@ -38,7 +38,9 @@
     <Compile Include="MatchExpression.fs" />
     <Compile Include="TranslateExpression.fs" />
     <Compile Include="PrintExpression.fs" />
-    <None Include="TestScript.fsx" />
+    <None Include="COPYING" />
+    <None Include="COPYING.LESSER" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

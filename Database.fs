@@ -29,7 +29,30 @@ type Dbms =
 
 type public Database(dbms:Dbms, connectionString:String) =
   class
-    
+    member x.ConnectionString = connectionString
+    member x.Dbms = dbms
+  end
+
+and public Row(rowData:IDictionary<String,Object>) =
+  class
+    interface IDictionary<String,Object> with
+      member x.Count = rowData.Count
+      member x.Item with get k = rowData.get_Item(k)
+                    and  set k v = raise <| NotSupportedException("set_Item is not supported on Row.")
+      member x.Keys with get() = rowData.Keys
+      member x.Values with get() = rowData.Values
+      member x.ContainsKey k = rowData.ContainsKey(k)
+      member x.Add (k, v) = raise <| NotSupportedException("Row is immutable; cannot add to it.")
+      member x.Remove (k:String) = raise <| NotSupportedException("Row is immutable; cannot remove from it.") :> bool
+      member x.TryGetValue (k, v) = rowData.TryGetValue(k, ref v)
+      member x.IsReadOnly with get() = true
+      member x.Add kv = raise <| NotSupportedException("Row is immutable; cannot add to it.")
+      member x.Clear() = raise <| NotSupportedException("Row is immutable; cannot clear it.")
+      member x.Contains v = rowData.Contains v
+      member x.CopyTo (kvs, idx) = rowData.CopyTo (kvs, idx)
+      member x.Remove (kv:KeyValuePair<String,Object>) = rowData.Remove kv
+      member x.GetEnumerator() = rowData.GetEnumerator()
+      member x.GetEnumerator() = rowData.GetEnumerator() :> IEnumerator
   end
 
 and IDatabaseTable =
