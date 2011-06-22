@@ -21,17 +21,23 @@ open System.Collections
 open System.Collections.Generic
 open System.Linq
 open System.Reflection
+open System.Data
 open System.Text.RegularExpressions
+open System.Data.Odbc
 open org.bovinegenius.DataBeast
 
 module Util =
   let AsDictionary (x:obj)  = match x with
-                               | :? IDictionary as d -> d
+                               | :? IDictionary<String,Object> as d -> d
+                               | :? DataRow as r -> let dict = new Dictionary<String,Object>()
+                                                    for key in r.Table.Columns do
+                                                      dict.Add(key.ColumnName, r.Item key)
+                                                    dict :> IDictionary<String,Object>
                                | _ -> let d = new Dictionary<String,Object>()
                                       for p in x.GetType().GetProperties() do
                                         d.Add(p.Name, p.GetValue (x, null))
-                                      d :> IDictionary
-  let quote_identifier (dbms : Dbms) (ident : String) =
+                                      d :> IDictionary<String,Object>
+  let QuoteIdentifier (dbms : Dbms) (ident : String) =
     if (new Regex("^\w+$")).IsMatch(ident)
       then ident
       else match dbms with
@@ -41,7 +47,11 @@ module Util =
             | _ -> failwith (sprintf "Don't know DBMS '%s'" (dbms.ToString()))
 
   let InsertStatement (dbms : Dbms, table : String, columns : String[]) =
-    let quote = quote_identifier dbms
+    let quote = QuoteIdentifier dbms
     let cols = String.Join(",", (columns.Select(quote).ToArray()))
     let vals = String.Join(",", (columns.Select(fun x -> "?").ToArray()))
       in sprintf "INSERT INTO %s (%s) VALUES (%s)" (quote table) cols vals
+
+  let FillParameters (comm : OdbcCommand) (args : IEnumerable<'a>) =
+    for (a, i) in args.Cast<String>().Select(fun x i -> (x, i)) do
+      ignore (comm.Parameters.AddWithValue(sprintf "Param%s" (i.ToString()), a))

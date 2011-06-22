@@ -24,6 +24,7 @@ open System.Linq.Expressions
 open System.Data.Odbc
 open System.Data
 open org.bovinegenius.DataBeast
+open org.bovinegenius.DataBeast.Util
 
 type public Database(dbms:Dbms, connectionString:String) =
   class
@@ -41,9 +42,8 @@ type public Database(dbms:Dbms, connectionString:String) =
       let comm = new OdbcCommand(q,conn)
         in comm.Transaction <- t;
            comm.CommandType <- CommandType.Text;
-      for (a, i) in args.Select(fun x i -> (x, i)) do
-        ignore (comm.Parameters.AddWithValue(sprintf "Param%s" (i.ToString()), a));
-      comm.ExecuteNonQuery()
+           FillParameters comm args;
+           comm.ExecuteNonQuery()
     member x.Execute (q : String, ([<ParamArray>] args: Object[])) =
       let conn = new OdbcConnection(connectionString)
         in conn.Open()
@@ -52,7 +52,47 @@ type public Database(dbms:Dbms, connectionString:String) =
              x.Execute(t, q, args)
            finally
              conn.Close()
-
+    member x.Insert (t : OdbcTransaction, table : String, row : obj) =
+      let d = AsDictionary(row)
+      let comm = new OdbcCommand(InsertStatement(dbms, table, d.Keys.Cast<String>().ToArray()), t.Connection)
+        in comm.Transaction <- t;
+           comm.CommandType <- CommandType.Text;
+           FillParameters comm d.Values;
+           comm.ExecuteNonQuery()
+    member x.Insert (t : OdbcTransaction, table : String, [<ParamArray>] rows : obj[]) =
+      rows.Aggregate(0, fun n row -> n + x.Insert(t, table, row))
+    member x.Insert (table : String, [<ParamArray>] rows : obj[]) =
+      let conn = new OdbcConnection(connectionString)
+      let t = conn.BeginTransaction()
+        in try
+             let count = rows.Aggregate(0, fun n row -> n + x.Insert(t, table, row))
+               in t.Commit();
+                  count
+           finally
+             conn.Close()
+    member x.Query (t : OdbcTransaction, q : String, [<ParamArray>] args : obj[]) =
+      let comm = new OdbcCommand(q, t.Connection)
+        in comm.Transaction <- t;
+           comm.CommandType <- CommandType.Text;
+           FillParameters comm args
+      let items = new OdbcDataAdapter()
+      let dataTable = new DataTable()
+      let rows = new List<Row>()
+        in items.SelectCommand <- comm;
+           ignore (items.Fill(dataTable))
+      for row in dataTable.Rows do
+        rows.Add(new Row(AsDictionary row))
+      rows :> IEnumerable<Row>
+    member x.Query (q : String, [<ParamArray>] args : obj[]) =
+      let conn = new OdbcConnection(connectionString)
+        in conn.Open();
+      let t = conn.BeginTransaction()
+        in try
+             let results = x.Query(t, q, args)
+               in t.Commit()
+             results
+           finally
+             conn.Close()
   end
 
 and public Row(rowData:IDictionary<String,Object>) =
