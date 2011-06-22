@@ -25,61 +25,64 @@ open System.Data.Odbc
 open System.Data
 open org.bovinegenius.DataBeast
 open org.bovinegenius.DataBeast.Util
+open org.bovinegenius.DataBeast.Expression
+open org.bovinegenius.DataBeast.Expression.Match
 
 type public Database(dbms:Dbms, connectionString:String) =
   class
-    member x.ConnectionString = connectionString
-    member x.Dbms = dbms
+    interface IDatabase with
+      member x.ConnectionString = connectionString
+      member x.Dbms = dbms
     member x.Item with get (tableName:String) = new DatabaseTable<Row>(dbms, tableName, x)
     member x.BeginTransaction () = let conn = new OdbcConnection(connectionString)
-                                     in conn.Open();
+                                      in conn.Open();
                                         conn.BeginTransaction()
     member x.OpenConnection () = let conn = new OdbcConnection(connectionString)
-                                   in conn.Open();
+                                    in conn.Open();
                                       conn
     member x.Execute (t : OdbcTransaction, q : String, ([<ParamArray>] args: Object[])) =
       let conn = t.Connection
       let comm = new OdbcCommand(q,conn)
         in comm.Transaction <- t;
-           comm.CommandType <- CommandType.Text;
-           FillParameters comm args;
-           comm.ExecuteNonQuery()
+            comm.CommandType <- CommandType.Text;
+            FillParameters comm args;
+            comm.ExecuteNonQuery()
     member x.Execute (q : String, ([<ParamArray>] args: Object[])) =
       let conn = new OdbcConnection(connectionString)
         in conn.Open()
       let t = conn.BeginTransaction()
         in try
-             x.Execute(t, q, args)
-           finally
-             conn.Close()
+              x.Execute(t, q, args)
+            finally
+              conn.Close()
     member x.Insert (t : OdbcTransaction, table : String, row : obj) =
       let d = AsDictionary(row)
       let comm = new OdbcCommand(InsertStatement(dbms, table, d.Keys.Cast<String>().ToArray()), t.Connection)
         in comm.Transaction <- t;
-           comm.CommandType <- CommandType.Text;
-           FillParameters comm d.Values;
-           comm.ExecuteNonQuery()
+            comm.CommandType <- CommandType.Text;
+            FillParameters comm d.Values;
+            comm.ExecuteNonQuery()
     member x.Insert (t : OdbcTransaction, table : String, [<ParamArray>] rows : obj[]) =
       rows.Aggregate(0, fun n row -> n + x.Insert(t, table, row))
     member x.Insert (table : String, [<ParamArray>] rows : obj[]) =
       let conn = new OdbcConnection(connectionString)
       let t = conn.BeginTransaction()
         in try
-             let count = rows.Aggregate(0, fun n row -> n + x.Insert(t, table, row))
-               in t.Commit();
+              let count = rows.Aggregate(0, fun n row -> n + x.Insert(t, table, row))
+                in t.Commit();
                   count
-           finally
-             conn.Close()
+            finally
+              conn.Close()
     member x.Query (t : OdbcTransaction, q : String, [<ParamArray>] args : obj[]) =
       let comm = new OdbcCommand(q, t.Connection)
         in comm.Transaction <- t;
-           comm.CommandType <- CommandType.Text;
-           FillParameters comm args
+            comm.CommandType <- CommandType.Text;
+            FillParameters comm args
       let items = new OdbcDataAdapter()
       let dataTable = new DataTable()
       let rows = new List<Row>()
         in items.SelectCommand <- comm;
-           ignore (items.Fill(dataTable))
+            ignore (items.Fill(dataTable))
       for row in dataTable.Rows do
         rows.Add(new Row(AsDictionary row))
       rows :> IEnumerable<Row>
@@ -88,11 +91,11 @@ type public Database(dbms:Dbms, connectionString:String) =
         in conn.Open();
       let t = conn.BeginTransaction()
         in try
-             let results = x.Query(t, q, args)
-               in t.Commit()
-             results
-           finally
-             conn.Close()
+              let results = x.Query(t, q, args)
+                in t.Commit()
+              results
+            finally
+              conn.Close()
   end
 
 and public Row(rowData:IDictionary<String,Object>) =
@@ -117,13 +120,6 @@ and public Row(rowData:IDictionary<String,Object>) =
       member x.GetEnumerator() = rowData.GetEnumerator() :> IEnumerator
   end
 
-and IDatabaseTable =
-  interface
-    inherit IQueryable
-    abstract TableName : String
-    abstract Database : Database
-  end
-
 and public DatabaseTableQuery<'a>(provider:IQueryProvider, expression:Expression) =
   class
     interface IQueryable<'a> with
@@ -142,7 +138,7 @@ and public DatabaseTable<'a>(dbms:Dbms, tableName:String, database:Database) as 
       member x.Provider = new DatabaseTableQueryProvider<'a>(dbms, database) :> IQueryProvider
     interface IDatabaseTable with
       member x.TableName = tableName
-      member x.Database = database
+      member x.Database = database :> IDatabase
   end
 
 and public DatabaseTableQueryProvider<'a>(dbms:Dbms , database:Database) as this =
@@ -152,5 +148,9 @@ and public DatabaseTableQueryProvider<'a>(dbms:Dbms , database:Database) as this
       member x.Execute (e:Expression) = this.Execute(e)
       member x.CreateQuery<'TElement> (e:Expression) = new DatabaseTableQuery<'TElement>(x, e) :> IQueryable<'TElement>
       member x.CreateQuery (e:Expression) = new DatabaseTableQuery<'a>(x, e) :> IQueryable
-    member x.Execute (e:Expression) = "" :> obj // Yes, this returns the wrong thing. It will be fixed when 'Database' is implemented.
+    member x.Execute (e:Expression) = let (sql, args) = Translate.translate_to_sql dbms e
+                                      let results = database.Query(sql, args.ToArray())
+                                        in match e with
+                                            | Call (e, "First", o, a) -> results.First() :> obj
+                                            | _ -> results :> obj
   end

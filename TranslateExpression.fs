@@ -105,12 +105,8 @@ module Translate =
     failwith "Dbms 'PostgreSQL' is currently unsupported."
 
   let translate_to_sql (dbms:Dbms) (e:Expression) =
-    let (sql, parameters) =  match dbms with
-                              | Dbms.MySql -> translate_to_mysql e
-                              | Dbms.SqlServer -> translate_to_sqlserver e
-                              | Dbms.PostgreSql -> translate_to_postgresql e
-                              | _ -> failwith (String.Format ("DBMS '{0}' no supported", dbms.ToString()))
-      in new KeyValuePair<String, List<Object>>(sql, parameters.ToList())
-      
-  
-
+    match dbms with
+     | Dbms.MySql -> translate_to_mysql e
+     | Dbms.SqlServer -> translate_to_sqlserver e
+     | Dbms.PostgreSql -> translate_to_postgresql e
+     | _ -> failwith (String.Format ("DBMS '{0}' no supported", dbms.ToString()))
