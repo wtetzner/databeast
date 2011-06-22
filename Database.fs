@@ -21,16 +21,38 @@ open System.Collections.Generic
 open System.Collections
 open System.Linq
 open System.Linq.Expressions
-
-type Dbms = 
-   | SqlServer = 1u
-   | MySql = 2u
-   | PostgreSql = 3u
+open System.Data.Odbc
+open System.Data
+open org.bovinegenius.DataBeast
 
 type public Database(dbms:Dbms, connectionString:String) =
   class
     member x.ConnectionString = connectionString
     member x.Dbms = dbms
+    member x.Item with get (tableName:String) = new DatabaseTable<Row>(dbms, tableName, x)
+    member x.BeginTransaction () = let conn = new OdbcConnection(connectionString)
+                                     in conn.Open();
+                                        conn.BeginTransaction()
+    member x.OpenConnection () = let conn = new OdbcConnection(connectionString)
+                                   in conn.Open();
+                                      conn
+    member x.Execute (t : OdbcTransaction, q : String, ([<ParamArray>] args: Object[])) =
+      let conn = t.Connection
+      let comm = new OdbcCommand(q,conn)
+        in comm.Transaction <- t;
+           comm.CommandType <- CommandType.Text;
+      for (a, i) in args.Select(fun x i -> (x, i)) do
+        ignore (comm.Parameters.AddWithValue(sprintf "Param%s" (i.ToString()), a));
+      comm.ExecuteNonQuery()
+    member x.Execute (q : String, ([<ParamArray>] args: Object[])) =
+      let conn = new OdbcConnection(connectionString)
+        in conn.Open()
+      let t = conn.BeginTransaction()
+        in try
+             x.Execute(t, q, args)
+           finally
+             conn.Close()
+
   end
 
 and public Row(rowData:IDictionary<String,Object>) =
