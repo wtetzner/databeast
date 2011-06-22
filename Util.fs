@@ -53,5 +53,5 @@ module Util =
       in sprintf "INSERT INTO %s (%s) VALUES (%s)" (quote table) cols vals
 
   let FillParameters (comm : OdbcCommand) (args : IEnumerable<'a>) =
-    for (a, i) in args.Cast<String>().Select(fun x i -> (x, i)) do
+    for (a, i) in args.Cast<Object>().Select(fun x i -> (x, i)) do
       ignore (comm.Parameters.AddWithValue(sprintf "Param%s" (i.ToString()), a))

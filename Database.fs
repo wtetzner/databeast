@@ -118,21 +118,31 @@ and public Row(rowData:IDictionary<String,Object>) =
       member x.Remove (kv:KeyValuePair<String,Object>) = rowData.Remove kv
       member x.GetEnumerator() = rowData.GetEnumerator()
       member x.GetEnumerator() = rowData.GetEnumerator() :> IEnumerator
+    member x.Item with get k = rowData.get_Item(k)
   end
 
-and public DatabaseTableQuery<'a>(provider:IQueryProvider, expression:Expression) =
+and public DatabaseTableQuery<'a> =
   class
+    val mutable provider : IQueryProvider
+    val mutable expression : Expression
+    new (qprovider:IQueryProvider, texpression:Expression) =
+      { provider = qprovider; expression = texpression}
+
+    new (qprovider:IQueryProvider) as this =
+      { provider = qprovider; expression = null }
+      then
+        this.expression <- Expression.Constant(this)
     interface IQueryable<'a> with
       member x.ElementType = typedefof<'a>
-      member x.Expression = expression
-      member x.Provider = provider
-      member x.GetEnumerator() = (provider.Execute(expression) :?> IEnumerable<'a>).GetEnumerator()
-      member x.GetEnumerator() = (provider.Execute(expression) :?> IEnumerable).GetEnumerator()
+      member x.Expression = x.expression
+      member x.Provider = x.provider
+      member x.GetEnumerator() = (x.provider.Execute(x.expression) :?> IEnumerable<'a>).GetEnumerator()
+      member x.GetEnumerator() = (x.provider.Execute(x.expression) :?> IEnumerable).GetEnumerator()
   end
 
 and public DatabaseTable<'a>(dbms:Dbms, tableName:String, database:Database) as this =
   class
-    inherit DatabaseTableQuery<'a>(new DatabaseTableQueryProvider<'a>(dbms, database), Expression.Constant(this))
+    inherit DatabaseTableQuery<'a>(new DatabaseTableQueryProvider<'a>(dbms, database))
       member x.Expression = Expression.Constant(x) :> Expression
       member x.ElementType = typedefof<'a>
       member x.Provider = new DatabaseTableQueryProvider<'a>(dbms, database) :> IQueryProvider

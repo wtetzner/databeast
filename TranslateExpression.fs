@@ -41,7 +41,7 @@ module Translate =
      | New (e, cons, args, mem) -> Expression.New(cons, strip_quotes_in_list args, mem) :> Expression
      | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
-  let evaluate (e:Expression) =
+  let rec evaluate (e:Expression) =
     match e with
       | Constant (c, tname, t, o) -> o
       | _ -> Expression.Lambda(e).Compile().DynamicInvoke(null)
@@ -51,7 +51,7 @@ module Translate =
      | NULL (e) -> ("NULL", [])
      | Quote (e, t, o) -> translate_to_mysql o
      | DatabaseTable (e, table) -> (table.TableName, [])
-     | Constant (c, tname, t, o) -> ("?", [o]) //o.ToString()
+     | Constant (c, tname, t, o) -> ("?", [c.Value]) //o.ToString()
      | Equal (e, l, r) -> let (rstr, rvals) = translate_to_mysql r
                             in let (lstr, lvals) = translate_to_mysql l
                                  in match (l, r) with
@@ -82,17 +82,17 @@ module Translate =
                             in (String.Format ("SELECT * FROM {0} WHERE {1}",
                                  (match o with
                                    | DatabaseTable (e, table) -> ostr
-                                   | _ -> String.Format ("({0})", ostr)),
+                                   | _ -> String.Format ("({0}) AS T", ostr)),
                                  astr), List.concat [ovals; avals])
      | Lambda (e, ps, body) -> translate_to_mysql body
      | Index (e, o, StringConstant (sc, idx)) -> (idx, [])
-     | FreeVariable (e, n, o, m) -> ("?", [evaluate o])
+     | FreeVariable (e, n, o, m) -> ("?", [evaluate e])
      | Call (e, "First", o, a) -> let exp = a.Item 0
                                     in let (str, vals) = translate_to_mysql exp
                                          in (String.Format ("SELECT * FROM {0} LIMIT 1",
                                               match exp with
                                                | DatabaseTable (e, table) -> str
-                                               | _ -> String.Format ("({0})", str)), vals)
+                                               | _ -> String.Format ("({0}) AS T", str)), vals)
      | Call (e, n, o, a) -> if o = null
                               then translate_to_mysql (a.Item 0)
                               else translate_to_mysql o
