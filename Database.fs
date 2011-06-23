@@ -140,7 +140,7 @@ and public DatabaseTableQuery<'a> =
       member x.GetEnumerator() = (x.provider.Execute(x.expression) :?> IEnumerable).GetEnumerator()
   end
 
-and public DatabaseTable<'a>(dbms:Dbms, tableName:String, database:Database) as this =
+and public DatabaseTable<'a>(dbms:Dbms, tableName:String, database:Database) =
   class
     inherit DatabaseTableQuery<'a>(new DatabaseTableQueryProvider<'a>(dbms, database))
       member x.Expression = Expression.Constant(x) :> Expression
@@ -149,6 +149,8 @@ and public DatabaseTable<'a>(dbms:Dbms, tableName:String, database:Database) as 
     interface IDatabaseTable with
       member x.TableName = tableName
       member x.Database = database :> IDatabase
+    member x.Insert (row : Object) = database.Insert(tableName, row)
+    member x.Insert (t : OdbcTransaction, row : Object) = database.Insert(t, tableName, row)
   end
 
 and public DatabaseTableQueryProvider<'a>(dbms:Dbms , database:Database) as this =
