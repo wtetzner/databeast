@@ -36,3 +36,6 @@ and IDatabaseTable =
     abstract TableName : String
     abstract Database : IDatabase
   end
+
+type Sql = 
+   | Constant of obj
