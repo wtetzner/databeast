@@ -138,6 +138,7 @@ and public DatabaseTableQuery<'a> =
       member x.Provider = x.provider
       member x.GetEnumerator() = (x.provider.Execute(x.expression) :?> IEnumerable<'a>).GetEnumerator()
       member x.GetEnumerator() = (x.provider.Execute(x.expression) :?> IEnumerable).GetEnumerator()
+    interface IOrderedQueryable<'a>
   end
 
 and public DatabaseTable<'a>(dbms:Dbms, tableName:String, database:Database) =

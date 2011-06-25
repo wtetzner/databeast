@@ -181,7 +181,7 @@ module Match =
     if e :? MemberExpression
       then let m = e :?> MemberExpression
              in if m.Expression.NodeType <> ExpressionType.Parameter
-                  then Some (m, m.Member.Name, m.Expression, m.Member)
+                  then Some (m, m.Member.Name)
                   else None
       else None
 
@@ -216,19 +216,19 @@ module Match =
   let (|New|_|) (e:Expression) =
     if e :? NewExpression
       then let n = e :?> NewExpression
-             in Some (n, n.Constructor, n.Arguments, n.Members)
+             in Some n
       else None
 
   let (|Quote|_|) (e:Expression) =
     match e with
      | Unary (e, t, o) -> if t = ExpressionType.Quote
-                            then Some (e, t, o)
+                            then Some (e, o)
                             else None
      | _ -> None
 
   let (|NULL|_|) (e:Expression) =
     match e with
      | Constant (e, tname, t, o) -> if o = null
-                                      then Some (e)
+                                      then Some e
                                       else None
      | _ -> None

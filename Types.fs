@@ -32,6 +32,7 @@ type IDatabase =
 
 and IDatabaseTable =
   interface
+    inherit IOrderedQueryable
     inherit IQueryable
     abstract TableName : String
     abstract Database : IDatabase

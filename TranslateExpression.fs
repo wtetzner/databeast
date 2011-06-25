@@ -31,12 +31,12 @@ module Translate =
     match e with
      | Constant (e, typeName, t, o) -> e :> Expression
      | MethodCall (e, name, m, o, args) -> Expression.Call(strip_quotes(o), m, strip_quotes_in_list args) :> Expression
-     | Quote (e, t, o) -> e.Operand
+     | Quote (e, o) -> e.Operand
      | Unary (e, t, o) -> Expression.MakeUnary(e.NodeType, strip_quotes(e.Operand), e.Type, e.Method) :> Expression
      | Lambda (e, args, body) -> Expression.Lambda(strip_quotes body, (strip_quotes_in_list (args.Cast<Expression>())).Cast<ParameterExpression>().ToArray()) :> Expression
      | Parameter (e, name, t) -> e :> Expression
      | MemberAccess (e, name, o, mem)  -> Expression.MakeMemberAccess(strip_quotes o, mem) :> Expression
-     | New (e, cons, args, mem) -> Expression.New(cons, strip_quotes_in_list args, mem) :> Expression
+     | New e -> Expression.New(e.Constructor, strip_quotes_in_list e.Arguments, e.Members) :> Expression
      | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
   let rec evaluate (e:Expression) =
@@ -46,8 +46,8 @@ module Translate =
 
   let rec translate_to_mysql (e:Expression) =
     match e with
-     | NULL (e) -> ("NULL", [])
-     | Quote (e, t, o) -> translate_to_mysql o
+     | NULL e -> ("NULL", [])
+     | Quote (e, o) -> translate_to_mysql o
      | DatabaseTable (e, table) -> (table.TableName, [])
      | Constant (c, tname, t, o) -> ("?", [c.Value]) //o.ToString()
      | Equal (e, l, r) -> let (rstr, rvals) = translate_to_mysql r
@@ -84,17 +84,17 @@ module Translate =
                                  astr), List.concat [ovals; avals])
      | Lambda (e, ps, body) -> translate_to_mysql body
      | Index (e, o, StringConstant (sc, idx)) -> (idx, [])
-     | FreeVariable (e, n, o, m) -> ("?", [evaluate e])
+     | FreeVariable (e, n) -> ("?", [evaluate e])
      | Call (e, "First", o, a) -> let exp = a.Item 0
                                     in let (str, vals) = translate_to_mysql exp
                                          in (String.Format ("SELECT * FROM {0} LIMIT 1",
                                               match exp with
                                                | DatabaseTable (e, table) -> str
                                                | _ -> String.Format ("({0}) AS T", str)), vals)
-     | Call (e, n, o, a) -> if o = null
-                              then translate_to_mysql (a.Item 0)
-                              else translate_to_mysql o
-     | _ -> failwith (String.Format ("Unsupported Expression type '{1}'", e.ToString(), e.NodeType.ToString()))
+//     | Call (e, n, o, a) -> if o = null
+//                              then translate_to_mysql (a.Item 0)
+//                              else translate_to_mysql o
+     | _ -> failwith (String.Format ("Unsupported Expression '{0}' of type '{1}'", e.ToString(), e.NodeType.ToString()))
 
   let translate_to_sqlserver (e:Expression) =
     failwith "Dbms 'SqlServer' is currently unsupported."
