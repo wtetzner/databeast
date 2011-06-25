@@ -24,8 +24,6 @@ open System.Linq
 open System
  
 module Translate =
-  type sql_translation = Sql of String * Object list
-
   let rec strip_quotes_in_list (e:IEnumerable<Expression>) =
     (e.Select (fun x -> strip_quotes x)).ToArray()
 
