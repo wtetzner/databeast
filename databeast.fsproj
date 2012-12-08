@@ -49,6 +49,7 @@
     <None Include="COPYING" />
     <None Include="COPYING.LESSER" />
     <None Include="README.md" />
+    <Compile Include="Serialize.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

@@ -18,33 +18,35 @@
 namespace org.bovinegenius.DataBeast
 open System
 
-type Exp =
-   | Intersection of Exp * Exp
-   | Union of Exp * Exp
-   | SetDifference of Exp * Exp
-   | NaturalJoin of Exp * Exp
-   | LeftJoin of Exp * Exp
-   | RightJoin of Exp * Exp
-   | CartesianProduct of Exp * Exp
-   | Selection of CondList * Exp
-   | Projection of AttrList * Exp
-   | Relation of Rel
-   | Constant of obj
+type Query =
+   | Intersection of Query * Query
+   | Union of Query * Query
+   | Difference of Query * Query
+   | NaturalJoin of Query * Query
+   | LeftJoin of Query * Query
+   | RightJoin of Query * Query
+   | CartesianProduct of Query * Query
+   | Selection of Exp * Query
+   | Projection of AttrList * Query
+   | Relation of Attribute
+   | Limit of Query * int * int
 
-and CondList = 
-   | Or of CondList * CondList
-   | And of CondList * CondList
-   | Not of CondList
+and Exp = 
+   | Or of Exp * Exp
+   | And of Exp * Exp
+   | Not of Exp
    | NotEqual of Exp * Exp
    | Equal of Exp * Exp
    | GreaterOrEqual of Exp * Exp
    | LessOrEqual of Exp * Exp
    | LessThan of Exp * Exp
    | GreaterThan of Exp * Exp
+   | IsNull of Exp
+   | IsNotNull of Exp
+   | Column of Attribute
+   | Constant of obj
 
 and AttrList = Attribute list
-
-and Rel = String
 
 and Attribute =
    | Name of String

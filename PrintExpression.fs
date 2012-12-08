@@ -27,7 +27,7 @@ open org.bovinegenius.DataBeast.Expression.Match
 module PrintExpression =
 
   let rec print_exps (exps:List<Expression>) =
-    String.Join (", ", (exps.Select (fun x -> print_exp x)).ToArray())
+    String.Join (", ", (exps.Select (fun x -> print_exp x)).ToArray<String>())
 
   and print_exp (e:Expression) =
     match e with
