@@ -43,6 +43,7 @@ and Exp =
    | GreaterThan of Exp * Exp
    | IsNull of Exp
    | IsNotNull of Exp
+   | Null
    | Column of Attribute
    | Constant of obj
 

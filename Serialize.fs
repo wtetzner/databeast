@@ -25,6 +25,7 @@ module Serialize =
             | IsNull e -> sprintf "(%s) IS NULL" (exp_to_mysql e)
             | IsNotNull e -> sprintf "(%s) IS NOT NULL" (exp_to_mysql e)
             | Constant e -> "?"
+            | Null -> "NULL"
             | Column a -> attr_to_mysql a
 
     and attr_to_mysql att =
