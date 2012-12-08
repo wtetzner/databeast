@@ -1,0 +1,9 @@
+Z:\wip\databeast\bin\Debug\databeast.XML
+Z:\wip\databeast\bin\Debug\databeast.dll
+Z:\wip\databeast\bin\Debug\databeast.pdb
+Z:\wip\databeast\obj\Debug\databeast.dll
+Z:\wip\databeast\obj\Debug\databeast.pdb
+Z:\wip\databeast\DataBeast\bin\Debug\databeast.XML
+Z:\wip\databeast\DataBeast\obj\Debug\databeast.fsprojResolveAssemblyReference.cache
+Z:\wip\databeast\DataBeast\obj\Debug\databeast.dll
+Z:\wip\databeast\DataBeast\obj\Debug\databeast.pdb

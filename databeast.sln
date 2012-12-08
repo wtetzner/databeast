@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "databeast", "databeast.fsproj", "{22910582-1973-4D37-973F-AF97AB569701}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "databeast", "DataBeast\databeast.fsproj", "{22910582-1973-4D37-973F-AF97AB569701}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
