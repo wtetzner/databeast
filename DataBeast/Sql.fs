@@ -18,37 +18,63 @@
 namespace org.bovinegenius.DataBeast
 open System
 
-type Query =
-   | Intersection of Query * Query
-   | Union of Query * Query
-   | Difference of Query * Query
-   | NaturalJoin of Query * Query
-   | LeftJoin of Query * Query
-   | RightJoin of Query * Query
-   | CartesianProduct of Query * Query
-   | Selection of Exp * Query
-   | Projection of AttrList * Query
-   | Relation of Attribute
-   | Limit of Query * int * int
+module Sql =
 
-and Exp = 
-   | Or of Exp * Exp
-   | And of Exp * Exp
-   | Not of Exp
-   | NotEqual of Exp * Exp
-   | Equal of Exp * Exp
-   | GreaterOrEqual of Exp * Exp
-   | LessOrEqual of Exp * Exp
-   | LessThan of Exp * Exp
-   | GreaterThan of Exp * Exp
-   | IsNull of Exp
-   | IsNotNull of Exp
-   | Null
-   | Column of Attribute
-   | Constant of obj
+    type Query =
+    | Intersection of Query * Query
+    | Union of Query * Query
+    | Difference of Query * Query
+    | NaturalJoin of Query * Query
+    | LeftJoin of Query * Query
+    | RightJoin of Query * Query
+    | CartesianProduct of Query * Query
+    | Selection of Exp * Query
+    | Projection of AttrList * Query
+    | Relation of Attribute
+    | Limit of Query * int * int
 
-and AttrList = Attribute list
+    and Exp = 
+    | Or of Exp * Exp
+    | And of Exp * Exp
+    | Not of Exp
+    | NotEqual of Exp * Exp
+    | Equal of Exp * Exp
+    | GreaterOrEqual of Exp * Exp
+    | LessOrEqual of Exp * Exp
+    | LessThan of Exp * Exp
+    | GreaterThan of Exp * Exp
+    | IsNull of Exp
+    | IsNotNull of Exp
+    | Null
+    | Column of Attribute
+    | Constant of obj
 
-and Attribute =
-   | Name of String
-   | FullName of String * String
+    and AttrList = Attribute list
+
+    and Attribute =
+    | Name of String
+    | FullName of String * String
+
+    let rec query_to_constants query =
+      match query with
+       | Projection (atts, q) -> query_to_constants q
+       | Selection (e, q) -> List.append (exp_to_constants e) (query_to_constants q)
+       | Relation att -> []
+       | Limit (q, s, e) -> query_to_constants q
+
+    and exp_to_constants exp =
+      match exp with
+       | Constant c -> [c]
+       | Or (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | And (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | NotEqual (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | Equal (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | GreaterOrEqual (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | LessOrEqual (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | LessThan (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | GreaterThan (e1, e2) -> List.append (exp_to_constants e1) (exp_to_constants e2)
+       | Not e -> exp_to_constants e
+       | IsNull e -> exp_to_constants e
+       | IsNotNull e -> exp_to_constants e
+       | Null -> []
+       | Column att -> []

@@ -24,7 +24,7 @@ open System.Linq.Expressions
 open System.Data.Odbc
 open System.Data
 open org.bovinegenius.DataBeast
-open org.bovinegenius.DataBeast.Util
+open Util
 open org.bovinegenius.DataBeast.Expression
 open org.bovinegenius.DataBeast.Expression.Match
 
@@ -108,7 +108,7 @@ and public Row(rowData:IDictionary<String,Object>) =
       member x.Values with get() = rowData.Values
       member x.ContainsKey k = rowData.ContainsKey(k)
       member x.Add (k, v) = raise <| NotSupportedException("Row is immutable; cannot add to it.")
-      member x.Remove (k:String) = raise <| NotSupportedException("Row is immutable; cannot remove from it.")
+      member x.Remove (k:String) = raise <| NotSupportedException("Row is immutable; cannot remove from it.") :> bool
       member x.TryGetValue (k, v) = rowData.TryGetValue(k, ref v)
       member x.IsReadOnly with get() = true
       member x.Add kv = raise <| NotSupportedException("Row is immutable; cannot add to it.")
@@ -161,7 +161,9 @@ and public DatabaseTableQueryProvider<'a>(dbms:Dbms , database:Database) as this
       member x.Execute (e:Expression) = this.Execute(e)
       member x.CreateQuery<'TElement> (e:Expression) = new DatabaseTableQuery<'TElement>(x, e) :> IQueryable<'TElement>
       member x.CreateQuery (e:Expression) = new DatabaseTableQuery<'a>(x, e) :> IQueryable
-    member x.Execute (e:Expression) = let (sql, args) = Translate.translate_to_sql dbms e
+    member x.Execute (e:Expression) = let query = Translate.to_query e
+                                      let sql = Serialize.to_mysql query
+                                      let args = Sql.query_to_constants query
                                       let results = database.Query(sql, args.ToArray())
                                         in match e with
                                             | Call (e, "First", o, a) -> results.First() :> obj

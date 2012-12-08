@@ -1,5 +1,5 @@
 ﻿namespace org.bovinegenius.DataBeast
-open org.bovinegenius.DataBeast
+open org.bovinegenius.DataBeast.Sql
 open System
 open Printf
 
@@ -33,5 +33,5 @@ module Serialize =
             | Name str -> sprintf "`%s`" (str.Replace("`", "``"))
             | FullName (tbl, col) -> sprintf "`%s`.`%s`" (tbl.Replace("`", "``")) (col.Replace("`", "``"))
 
-    let thing = Projection (([Name "Fred"; Name "Bob"; FullName ("Tab`le", "TheColumn")]),
-        (Limit ((Selection ((Or ((Equal ((Column (FullName ("Tab`le", "Column1"))), (Constant 1))), (IsNull (Column (Name "X"))))), (Relation (Name "Table"))),10,20))))
+    //let thing = Projection (([Name "Fred"; Name "Bob"; FullName ("Tab`le", "TheColumn")]),
+    //    (Limit ((Selection ((Or ((Equal ((Column (FullName ("Tab`le", "Column1"))), (Constant 1))), (IsNull (Column (Name "X"))))), (Relation (Name "Table"))),10,20))))
