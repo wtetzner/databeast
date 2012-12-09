@@ -93,7 +93,10 @@ module Match =
   let (|Call|_|) (e:Expression) =
     if e.NodeType = ExpressionType.Call
       then match e with
-            | MethodCall (e, n, m, o, a) -> Some (e, n, o, a)
+            | MethodCall (e, n, m, o, a) ->
+                match o with
+                 | null -> Some (e, n, a.First(), a.Skip(1).AsEnumerable())
+                 | _ -> Some (e, n, o, a.AsEnumerable())
             | _ -> None
       else None
 
@@ -161,28 +164,37 @@ module Match =
       else None
 
   let (|Parameter|_|) (e:Expression) =
-    if e.NodeType = ExpressionType.Parameter
-      then let par = e :?> ParameterExpression
-             in Some (par, par.Name, par.Type)
+    if e.NodeType = ExpressionType.Parameter then
+     let par = e :?> ParameterExpression in Some (par, par.Name, par.Type)
+    else None
+
+  let (|FreeVariable|_|) (e:Expression) =
+    if e :? MemberExpression
+      then let m = e :?> MemberExpression
+             in if m.Expression.NodeType <> ExpressionType.Parameter
+                  then Some (m, m.Type, m.Member.Name)
+                  else None
       else None
+
+  let (|Property|_|) (e:Expression) =
+    if e.NodeType = ExpressionType.MemberAccess then
+       match e with
+        | FreeVariable _ -> None
+        | _ -> let prop = e :?> MemberExpression in
+                 Some (prop, prop.Expression, prop.Member, prop.Member.Name)
+    else
+        None
 
   let (|Index|_|) (e:Expression) =
     match e with
-     | MethodCall (e, "get_Item", m, o, a) -> Some (e, o, a.Item 0)
+     | MethodCall (e, "get_Item", m, o, a) -> Some (e :> Expression, o, a.Item 0)
+     | Property (e, o, m, name) -> Some (e :> Expression, o, (Expression.Constant(name)) :> Expression)
      | _ -> None
 
   let (|Lambda|_|) (e:Expression) =
     if e :? LambdaExpression
       then let l = e :?> LambdaExpression
              in Some (l, l.Parameters, l.Body)
-      else None
-
-  let (|FreeVariable|_|) (e:Expression) =
-    if e :? MemberExpression
-      then let m = e :?> MemberExpression
-             in if m.Expression.NodeType <> ExpressionType.Parameter
-                  then Some (m, m.Member.Name)
-                  else None
       else None
 
   let (|StringConstant|_|) (e:Expression) =
@@ -204,13 +216,6 @@ module Match =
      | Constant (e, tname, t, o) -> if o :? IQueryable
                                       then Some (e, o :?> IQueryable)
                                       else None
-     | _ -> None
-
-  let (|DatabaseTable|_|) (e:Expression) =
-    match e with
-     | IQueryable (e, o) -> if o :? IDatabaseTable
-                              then Some (e, o :?> IDatabaseTable)
-                              else None
      | _ -> None
 
   let (|New|_|) (e:Expression) =

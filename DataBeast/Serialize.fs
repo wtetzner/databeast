@@ -9,6 +9,7 @@ module Serialize =
        | Selection (e, q) -> sprintf "SELECT * FROM (%s) WHERE %s" (to_mysql q) (exp_to_mysql e)
        | Projection (atts, q) -> sprintf "SELECT %s FROM (%s)" (String.Join(", ", List.map attr_to_mysql atts)) (to_mysql q)
        | Relation att -> sprintf "SELECT * FROM %s" (attr_to_mysql att)
+       | Limit (q, 0, take) -> sprintf "SELECT * FROM (%s) LIMIT %d" (to_mysql q) take
        | Limit (q, offset, take) -> sprintf "SELECT * FROM (%s) LIMIT %d,%d" (to_mysql q) offset take
 
     and exp_to_mysql exp =

@@ -44,8 +44,8 @@
     <Compile Include="Types.fs" />
     <Compile Include="Util.fs" />
     <Compile Include="MatchExpression.fs" />
-    <Compile Include="TranslateExpression.fs" />
     <Compile Include="PrintExpression.fs" />
+    <Compile Include="TranslateExpression.fs" />
     <Compile Include="Database.fs" />
     <None Include="COPYING" />
     <None Include="COPYING.LESSER" />

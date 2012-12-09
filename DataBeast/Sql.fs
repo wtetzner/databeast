@@ -17,6 +17,7 @@
 
 namespace org.bovinegenius.DataBeast
 open System
+open System.Linq;
 
 module Sql =
 
@@ -32,6 +33,7 @@ module Sql =
     | Projection of AttrList * Query
     | Relation of Attribute
     | Limit of Query * int * int
+    | Query of Attribute * Query
 
     and Exp = 
     | Or of Exp * Exp
@@ -55,12 +57,12 @@ module Sql =
     | Name of String
     | FullName of String * String
 
-    let rec query_to_constants query =
+    let rec query_to_consts query =
       match query with
-       | Projection (atts, q) -> query_to_constants q
-       | Selection (e, q) -> List.append (exp_to_constants e) (query_to_constants q)
+       | Projection (atts, q) -> query_to_consts q
+       | Selection (e, q) -> List.append (exp_to_constants e) (query_to_consts q)
        | Relation att -> []
-       | Limit (q, s, e) -> query_to_constants q
+       | Limit (q, s, e) -> query_to_consts q
 
     and exp_to_constants exp =
       match exp with
@@ -78,3 +80,7 @@ module Sql =
        | IsNotNull e -> exp_to_constants e
        | Null -> []
        | Column att -> []
+
+    and query_to_constants query =
+        let consts = query_to_consts query in
+          consts.AsEnumerable()

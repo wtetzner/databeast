@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "databeast", "DataBeast\databeast.fsproj", "{22910582-1973-4D37-973F-AF97AB569701}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{4AECC16D-5EE6-49B0-A21E-6520C4FB3E26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{22910582-1973-4D37-973F-AF97AB569701}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{22910582-1973-4D37-973F-AF97AB569701}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{22910582-1973-4D37-973F-AF97AB569701}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4AECC16D-5EE6-49B0-A21E-6520C4FB3E26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4AECC16D-5EE6-49B0-A21E-6520C4FB3E26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4AECC16D-5EE6-49B0-A21E-6520C4FB3E26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4AECC16D-5EE6-49B0-A21E-6520C4FB3E26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
