@@ -45,11 +45,13 @@
     <Compile Include="Util.fs" />
     <Compile Include="MatchExpression.fs" />
     <Compile Include="PrintExpression.fs" />
+    <Compile Include="Walk.fs" />
     <Compile Include="TranslateExpression.fs" />
     <Compile Include="Database.fs" />
     <None Include="COPYING" />
     <None Include="COPYING.LESSER" />
     <None Include="README.md" />
+    <Compile Include="Operators.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

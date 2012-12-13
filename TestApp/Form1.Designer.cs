@@ -42,7 +42,7 @@
             this.Linq.Multiline = true;
             this.Linq.Name = "Linq";
             this.Linq.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.Linq.Size = new System.Drawing.Size(944, 437);
+            this.Linq.Size = new System.Drawing.Size(948, 337);
             this.Linq.TabIndex = 0;
             // 
             // Sql
@@ -51,16 +51,16 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.Sql.Font = new System.Drawing.Font("Consolas", 10.93194F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Sql.Location = new System.Drawing.Point(12, 539);
+            this.Sql.Location = new System.Drawing.Point(12, 460);
             this.Sql.Multiline = true;
             this.Sql.Name = "Sql";
             this.Sql.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.Sql.Size = new System.Drawing.Size(944, 323);
+            this.Sql.Size = new System.Drawing.Size(948, 371);
             this.Sql.TabIndex = 1;
             // 
             // Translate
             // 
-            this.Translate.Location = new System.Drawing.Point(12, 465);
+            this.Translate.Location = new System.Drawing.Point(12, 377);
             this.Translate.Name = "Translate";
             this.Translate.Size = new System.Drawing.Size(212, 56);
             this.Translate.TabIndex = 2;
@@ -70,9 +70,9 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(970, 929);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.ClientSize = new System.Drawing.Size(974, 843);
             this.Controls.Add(this.Translate);
             this.Controls.Add(this.Sql);
             this.Controls.Add(this.Linq);

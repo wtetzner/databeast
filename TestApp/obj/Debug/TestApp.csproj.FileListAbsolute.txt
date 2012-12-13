@@ -1,3 +1,5 @@
+Z:\wip\databeast\TestApp\obj\Debug\TestApp.Properties.Resources.resources
+Z:\wip\databeast\TestApp\obj\Debug\TestApp.csproj.GenerateResource.Cache
 Z:\wip\databeast\TestApp\bin\Debug\TestApp.exe.config
 Z:\wip\databeast\TestApp\bin\Debug\TestApp.exe
 Z:\wip\databeast\TestApp\bin\Debug\TestApp.pdb
@@ -5,8 +7,6 @@ Z:\wip\databeast\TestApp\bin\Debug\databeast.dll
 Z:\wip\databeast\TestApp\bin\Debug\databeast.pdb
 Z:\wip\databeast\TestApp\bin\Debug\databeast.xml
 Z:\wip\databeast\TestApp\obj\Debug\TestApp.csprojResolveAssemblyReference.cache
-Z:\wip\databeast\TestApp\obj\Debug\TestApp.Form1.resources
-Z:\wip\databeast\TestApp\obj\Debug\TestApp.Properties.Resources.resources
-Z:\wip\databeast\TestApp\obj\Debug\TestApp.csproj.GenerateResource.Cache
 Z:\wip\databeast\TestApp\obj\Debug\TestApp.exe
 Z:\wip\databeast\TestApp\obj\Debug\TestApp.pdb
+Z:\wip\databeast\TestApp\obj\Debug\TestApp.Form1.resources

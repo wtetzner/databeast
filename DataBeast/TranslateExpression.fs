@@ -1,4 +1,4 @@
-﻿// Copyright 2011 Walter Tetzner
+﻿// Copyright 2011, 2012 Walter Tetzner
 //
 // This file is part of DataBeast.
 //
@@ -19,6 +19,7 @@ namespace org.bovinegenius.DataBeast.Expression
 open System.Collections.Generic
 open org.bovinegenius.DataBeast
 module M = Expression.Match
+open org.bovinegenius.DataBeast.Expression.Walk
 open Sql
 open PrintExpression
 open System.Linq.Expressions
@@ -26,18 +27,20 @@ open System.Linq
 open System
  
 module Translate =
-  let rec strip_quotes_in_list (e:IEnumerable<Expression>) = (e.Select (fun x -> (strip_quotes x)))
+  let rec strip_quotes_in_list (e:IEnumerable<Expression>) = (e.Select strip_quotes).ToArray<Expression>()
 
   and strip_quotes (e:Expression) =
     match e with
      | null -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", print_exp e, e.NodeType.ToString()))
+     | M.Quote (e, o) -> strip_quotes e.Operand
      | M.Constant (e, typeName, t, o) -> e :> Expression
-     | M.MethodCall (e, name, m, o, args) -> 
+     | M.RawMethodCall (e, name, m, o, args) ->
         match o with
          | null -> Expression.Call(o, m, strip_quotes_in_list args) :> Expression
          | _ -> Expression.Call(strip_quotes(o), m, strip_quotes_in_list args) :> Expression
-     | M.Quote (e, o) -> e.Operand
+     //| M.Unary (e, ExpressionType.Convert, o) -> strip_quotes o
      | M.Unary (e, t, o) -> Expression.MakeUnary(e.NodeType, strip_quotes(e.Operand), e.Type, e.Method) :> Expression
+     | M.Binary (e, t, l, r) -> Expression.MakeBinary(e.NodeType, strip_quotes l, strip_quotes r) :> Expression
      | M.Lambda (e, args, body) -> Expression.Lambda(strip_quotes body, (strip_quotes_in_list (args.Cast<Expression>())).Cast<ParameterExpression>()) :> Expression
      | M.Parameter (e, name, t) -> e :> Expression
      | M.MemberAccess (e, name, o, mem)  -> Expression.MakeMemberAccess(strip_quotes o, mem) :> Expression
@@ -67,7 +70,10 @@ module Translate =
         | M.Lambda (e, ps, body) -> to_exp body
         | M.Index (e, o, M.StringConstant (sc, idx)) ->
             match o with
-              | M.Parameter (e, n, t) -> Column (FullName (n, idx))
+              | M.Row e ->
+                match o with
+                 | M.Parameter (e, n, t) -> Column (FullName (n, idx))
+                 | _ -> Column (FullName (o.NodeType.ToString(), idx))
               | _ -> Column (Name idx)
          
         | M.FreeVariable (e, t, n) -> Constant (evaluate e)
@@ -75,13 +81,33 @@ module Translate =
 
   let rec to_query (e:Expression) =
       match e with
-       | M.Index (e, o, M.StringConstant (sc, idx)) -> Relation (Name idx)
+       | M.DatabaseTable e -> Relation (Name ((evaluate e) :?> IDatabaseTable).TableName)
        | M.Where (e, o, a) -> Selection (to_exp a, to_query o)
        | M.Call (e, "First", o, a) -> Limit (to_query o, 0, 1)
-//     | Call (e, n, o, a) -> if o = null
-//                              then translate_to_mysql (a.Item 0)
-//                              else translate_to_mysql o
        | _ -> failwith (String.Format ("Unsupported Expression '{0}' of type '{1}'", print_exp e, e.NodeType.ToString()))
 
+  let merge_wheres exp =
+    match exp with
+     | M.Call (e, "Where", M.Call (e2, "Where", o, la), a) ->
+       //failwith (sprintf "left: %s, right: %s" (la.First().NodeType.ToString()) (a.First().NodeType.ToString()))
+       match (strip_quotes (la.First()), strip_quotes (a.First())) with
+        | (M.Lambda (le, largs, lbody), M.Lambda (re, rargs, rbody)) ->
+          //failwith "HERE!"
+          let new_r = walk (fun ex ->
+                              match ex with
+                               | M.Parameter (pe, pn, pt) -> Some (le.Parameters.First() :> Expression)
+                               | _ -> None) rbody in
+            Some (Expression.Call(null, e2.Method, [o; (Expression.Lambda(Expression.AndAlso(lbody, new_r), largs)) :> Expression]) :> Expression)
+        | _ -> None
+     | _ -> None
+
+  let remove_quotes exp =
+    post_walk (fun x ->
+                match x with
+                 | M.Quote (e, o) -> Some o
+                 | _ -> None) exp
+
+  let collapse_where exp =
+    post_walk merge_wheres (strip_quotes exp)
 
 

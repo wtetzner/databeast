@@ -1,4 +1,4 @@
-﻿// Copyright 2011 Walter Tetzner
+﻿// Copyright 2011, 2012 Walter Tetzner
 //
 // This file is part of DataBeast.
 //
@@ -84,19 +84,28 @@ module Match =
             | _ -> None
       else None
 
+  let (|RawMethodCall|_|) (e:Expression) =
+    if e :? MethodCallExpression
+    then
+        let c = e :?> MethodCallExpression in
+            Some (c, c.Method.Name, c.Method, c.Object, c.Arguments.ToArray<Expression>())
+    else
+        None
+
   let (|MethodCall|_|) (e:Expression) =
     if e :? MethodCallExpression
-      then let c = e :?> MethodCallExpression
-             in Some (c, c.Method.Name, c.Method, c.Object, c.Arguments)
-      else None
+    then
+        let c = e :?> MethodCallExpression in
+          match c.Object with
+           | null -> Some (c, c.Method.Name, c.Method, c.Arguments.First(), c.Arguments.Skip(1).ToArray<Expression>())
+           | _ -> Some (c, c.Method.Name, c.Method, c.Object, c.Arguments.ToArray<Expression>())
+    else
+        None
       
   let (|Call|_|) (e:Expression) =
     if e.NodeType = ExpressionType.Call
       then match e with
-            | MethodCall (e, n, m, o, a) ->
-                match o with
-                 | null -> Some (e, n, a.First(), a.Skip(1).AsEnumerable())
-                 | _ -> Some (e, n, o, a.AsEnumerable())
+            | MethodCall (e, n, m, o, a) -> Some (e, n, o, a)
             | _ -> None
       else None
 
@@ -125,12 +134,17 @@ module Match =
 
   let (|Where|_|) (e:Expression) =
     match e with
-     | MethodCall (e, "Where", m, o, a) -> Some (e, a.First(), a.Skip(1).First())
+     | MethodCall (e, "Where", m, o, a) -> Some (e, o, a.First())
+     | _ -> None
+
+  let (|GroupJoin|_|) (e:Expression) =
+    match e with
+     | MethodCall (e, "GroupJoin", m, o, a) -> Some (e, o, a.First(), a.ElementAt(1), a.ElementAt(2), a.ElementAt(3))
      | _ -> None
 
   let (|Select|_|) (e:Expression) =
     match e with
-     | MethodCall (e, "Select", m, o, a) -> Some (e, m, o, a.Item 1)
+     | MethodCall (e, "Select", m, o, a) -> Some (e, m, o, a.First())
      | _ -> None
 
   let (|SelectMany|_|) (e:Expression) =
@@ -187,7 +201,7 @@ module Match =
 
   let (|Index|_|) (e:Expression) =
     match e with
-     | MethodCall (e, "get_Item", m, o, a) -> Some (e :> Expression, o, a.Item 0)
+     | MethodCall (e, "get_Item", m, o, a) -> Some (e :> Expression, o, (a.ElementAt 0))
      | Property (e, o, m, name) -> Some (e :> Expression, o, (Expression.Constant(name)) :> Expression)
      | _ -> None
 
@@ -217,6 +231,18 @@ module Match =
                                       then Some (e, o :?> IQueryable)
                                       else None
      | _ -> None
+
+  let (|DatabaseTable|_|) (e:Expression) =
+    if Type.GetType("org.bovinegenius.DataBeast.IDatabaseTable").IsAssignableFrom(e.Type) then
+        Some (e)
+    else
+        None
+
+  let (|Row|_|) (e:Expression) =
+    if e.Type.Equals(Type.GetType("org.bovinegenius.DataBeast.Row")) || e.Type.IsSubclassOf(Type.GetType("org.bovinegenius.DataBeast.Row")) then
+        Some (e)
+    else
+        None
 
   let (|New|_|) (e:Expression) =
     if e :? NewExpression

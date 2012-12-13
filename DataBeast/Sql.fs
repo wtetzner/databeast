@@ -1,4 +1,4 @@
-﻿// Copyright 2011 Walter Tetzner
+﻿// Copyright 2011, 2012 Walter Tetzner
 //
 // This file is part of DataBeast.
 //
