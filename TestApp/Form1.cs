@@ -35,8 +35,8 @@ namespace TestApp
                 orderby m["stuff"] descending, x["y"]
                 //orderby m["thing"] descending
                 select new { m, x }).Where(p => p.m["key"] == "stuff").Where(a => a.x["bob"] == null);
-            
-            var exp = ((LambdaExpression)Translate.collapse_where(Eval.eval_tables(orig_exp))).Body; //Translate.strip_quotes(orig_exp.Body);
+
+            var exp = ((LambdaExpression)Translate.collapse_where(Eval.partial_eval(orig_exp))).Body; //Translate.strip_quotes(orig_exp.Body);
             Linq.Text = org.bovinegenius.DataBeast.PrintExpression.print_exp(exp);
 
             try {

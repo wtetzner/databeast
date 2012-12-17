@@ -60,3 +60,10 @@ module Walk =
                     None
                   else
                     Some (post_walk func v)) exp
+
+    and replace obj1 obj2 exp =
+      walk (fun e ->
+             if obj1 = e then
+               Some obj2
+             else
+               None) exp

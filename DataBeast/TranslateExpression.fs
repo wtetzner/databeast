@@ -77,7 +77,7 @@ module Translate =
 
   let rec to_query (e:Expression) =
       match e with
-       | M.DatabaseTable e -> Relation (Name ((evaluate e) :?> IDatabaseTable).TableName)
+       | M.DatabaseTable (e, dt) -> Relation (Name dt.TableName)
        | M.Where (e, o, a) -> Selection (to_exp a, to_query o)
        | M.Call (e, "First", o, a) -> Limit (to_query o, 0, 1)
        | _ -> failwith (String.Format ("Unsupported Expression '{0}' of type '{1}'", print_exp e, e.NodeType.ToString()))

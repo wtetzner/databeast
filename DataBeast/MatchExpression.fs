@@ -233,8 +233,10 @@ module Match =
      | _ -> None
 
   let (|DatabaseTable|_|) (e:Expression) =
-    if Type.GetType("org.bovinegenius.DataBeast.IDatabaseTable").IsAssignableFrom(e.Type) then
-        Some (e)
+    if Type.GetType("org.bovinegenius.DataBeast.IDatabaseTable").IsAssignableFrom(e.Type) &&
+       e :? ConstantExpression then
+       let c = e :?> ConstantExpression in
+        Some (e, c.Value :?> org.bovinegenius.DataBeast.IDatabaseTable)
     else
         None
 
