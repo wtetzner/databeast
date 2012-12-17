@@ -8,4 +8,3 @@ Z:\wip\databeast\DataBeast\bin\Debug\databeast.dll
 Z:\wip\databeast\DataBeast\bin\Debug\databeast.pdb
 Z:\wip\databeast\DataBeast\obj\Debug\databeast.dll
 Z:\wip\databeast\DataBeast\obj\Debug\databeast.pdb
-Z:\wip\databeast\DataBeast\obj\Debug\databeast.fsprojResolveAssemblyReference.cache

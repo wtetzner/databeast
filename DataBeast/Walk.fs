@@ -25,7 +25,7 @@ open System.Linq.Expressions
 
 module Walk =
 
-    let rec walk_list func (exps:IEnumerable<Expression>) = exps.Select(fun x -> walk func x)
+    let rec walk_list func (exps:IEnumerable<Expression>) = exps.Select(fun x -> walk func x).ToArray<Expression>()
 
     and walk func exp =
       let result = func exp in
@@ -36,12 +36,14 @@ module Walk =
             | Constant (e, typeName, t, o) -> exp
             | RawMethodCall (e, name, m, o, args) -> 
               match o with
-               | null -> Expression.Call(o, m, walk_list func args) :> Expression
+               | null ->
+                 let new_args = walk_list func args in
+                   Expression.Call(o, m, new_args) :> Expression
                | _ -> Expression.Call(walk func o, m, walk_list func args) :> Expression
             | Quote (e, o) -> Expression.Quote(walk func e.Operand) :> Expression
             | Unary (e, t, o) -> Expression.MakeUnary(e.NodeType, walk func e.Operand, e.Type, e.Method) :> Expression
             | Binary (e, t, l, r) -> Expression.MakeBinary(e.NodeType, walk func l, walk func r) :> Expression
-            | Lambda (e, args, body) -> Expression.Lambda(walk func body, (walk_list func (args.Cast<Expression>())).Cast<ParameterExpression>()) :> Expression
+            | Lambda (e, args, body) -> Expression.Lambda(e.Type, walk func body, (walk_list func (args.Cast<Expression>())).Cast<ParameterExpression>()) :> Expression
             | Parameter (e, name, t) -> e :> Expression
             | MemberAccess (e, name, o, mem)  -> Expression.MakeMemberAccess(walk func o, mem) :> Expression
             | New e -> Expression.New(e.Constructor, walk_list func e.Arguments, e.Members) :> Expression

@@ -1,4 +1,4 @@
-﻿// Copyright 2011 Walter Tetzner
+﻿// Copyright 2011, 2012 Walter Tetzner
 //
 // This file is part of DataBeast.
 //
@@ -15,26 +15,24 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with DataBeast.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace org.bovinegenius.DataBeast
+namespace org.bovinegenius.DataBeast.Expression
+open org.bovinegenius.DataBeast.Expression.Match
+open org.bovinegenius.DataBeast.Expression.Walk
 open System
-open System.Linq
 open System.Collections.Generic
+open System.Linq
+open System.Linq.Expressions
 
-type Dbms = 
-   | SqlServer = 1u
-   | MySql = 2u
-   | PostgreSql = 3u
+module Eval =
 
-type IDatabase =
-  interface
-    abstract ConnectionString : String
-    abstract Dbms : Dbms
-  end
+  let rec evaluate (e:Expression) =
+    match e with
+     | Constant (c, tname, t, o) -> o
+     | _ -> Expression.Lambda(e).Compile().DynamicInvoke(null)
 
-and IDatabaseTable =
-  interface
-    inherit IOrderedQueryable
-    inherit IQueryable
-    abstract TableName : String
-    abstract Database : IDatabase
-  end
+  and eval_tables (e:Expression) =
+    walk (fun e ->
+           match e with
+            | DatabaseTable e -> Some (Expression.Constant(evaluate e) :> Expression)
+            | _ -> None) e
+

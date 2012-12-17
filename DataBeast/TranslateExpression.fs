@@ -20,6 +20,7 @@ open System.Collections.Generic
 open org.bovinegenius.DataBeast
 module M = Expression.Match
 open org.bovinegenius.DataBeast.Expression.Walk
+open org.bovinegenius.DataBeast.Expression.Eval
 open Sql
 open PrintExpression
 open System.Linq.Expressions
@@ -46,11 +47,6 @@ module Translate =
      | M.MemberAccess (e, name, o, mem)  -> Expression.MakeMemberAccess(strip_quotes o, mem) :> Expression
      | M.New e -> Expression.New(e.Constructor, strip_quotes_in_list e.Arguments, e.Members) :> Expression
      | _ -> failwith (String.Format ("Don't know expression '{0}' of type '{1}'", print_exp e, e.NodeType.ToString()))
-
-  let rec evaluate (e:Expression) =
-    match e with
-      | M.Constant (c, tname, t, o) -> o
-      | _ -> Expression.Lambda(e).Compile().DynamicInvoke(null)
 
       
   let rec to_exp (e:Expression) =
@@ -97,7 +93,7 @@ module Translate =
                               match ex with
                                | M.Parameter (pe, pn, pt) -> Some (le.Parameters.First() :> Expression)
                                | _ -> None) rbody in
-            Some (Expression.Call(null, e2.Method, [o; (Expression.Lambda(Expression.AndAlso(lbody, new_r), largs)) :> Expression]) :> Expression)
+            Some (Expression.Call(null, e2.Method, [o; (Expression.Quote(Expression.Lambda(Expression.AndAlso(lbody, new_r), largs))) :> Expression]) :> Expression)
         | _ -> None
      | _ -> None
 
@@ -108,6 +104,6 @@ module Translate =
                  | _ -> None) exp
 
   let collapse_where exp =
-    post_walk merge_wheres (strip_quotes exp)
+    post_walk merge_wheres exp
 
 

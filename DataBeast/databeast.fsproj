@@ -46,6 +46,7 @@
     <Compile Include="MatchExpression.fs" />
     <Compile Include="PrintExpression.fs" />
     <Compile Include="Walk.fs" />
+    <Compile Include="Eval.fs" />
     <Compile Include="TranslateExpression.fs" />
     <Compile Include="Database.fs" />
     <None Include="COPYING" />

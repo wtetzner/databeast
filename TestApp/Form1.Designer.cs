@@ -30,7 +30,7 @@
         {
             this.Linq = new System.Windows.Forms.TextBox();
             this.Sql = new System.Windows.Forms.TextBox();
-            this.Translate = new System.Windows.Forms.Button();
+            this.DoTranslate = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // Linq
@@ -58,22 +58,22 @@
             this.Sql.Size = new System.Drawing.Size(948, 371);
             this.Sql.TabIndex = 1;
             // 
-            // Translate
+            // DoTranslate
             // 
-            this.Translate.Location = new System.Drawing.Point(12, 377);
-            this.Translate.Name = "Translate";
-            this.Translate.Size = new System.Drawing.Size(212, 56);
-            this.Translate.TabIndex = 2;
-            this.Translate.Text = "Translate";
-            this.Translate.UseVisualStyleBackColor = true;
-            this.Translate.Click += new System.EventHandler(this.Translate_Click);
+            this.DoTranslate.Location = new System.Drawing.Point(12, 377);
+            this.DoTranslate.Name = "DoTranslate";
+            this.DoTranslate.Size = new System.Drawing.Size(212, 56);
+            this.DoTranslate.TabIndex = 2;
+            this.DoTranslate.Text = "Translate";
+            this.DoTranslate.UseVisualStyleBackColor = true;
+            this.DoTranslate.Click += new System.EventHandler(this.Translate_Click);
             // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Inherit;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.ClientSize = new System.Drawing.Size(974, 843);
-            this.Controls.Add(this.Translate);
+            this.Controls.Add(this.DoTranslate);
             this.Controls.Add(this.Sql);
             this.Controls.Add(this.Linq);
             this.Name = "Form1";
@@ -87,7 +87,7 @@
 
         private System.Windows.Forms.TextBox Linq;
         private System.Windows.Forms.TextBox Sql;
-        private System.Windows.Forms.Button Translate;
+        private System.Windows.Forms.Button DoTranslate;
     }
 }
 

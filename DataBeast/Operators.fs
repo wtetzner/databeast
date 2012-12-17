@@ -17,12 +17,28 @@
 
 namespace org.bovinegenius.DataBeast
 open System
+open System.Collections
+open System.Collections.Generic
 open System.Linq;
 open System.Linq.Expressions;
 open org.bovinegenius.DataBeast.Expression.Match
 open System.Reflection;
 
-//module Operators =
+module Operators =
+
+    type table_name = string
+    type column_name = string
+
+    type reference = Table of table_name
+                   | Column of table_name * column_name
+
+    type environment = { current_obj : Expression; paths : Dictionary<Expression, reference> }
+
+    let rec environment exp =
+        match exp with
+         | DatabaseTable e ->  e
+        
+    //and update_env env exp =
 
 //    let environment env exp =
 //        match exp with

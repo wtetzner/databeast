@@ -28,14 +28,15 @@ namespace TestApp
             Expression<Func<Object>> orig_exp = () =>
                (from m in db["movies"]
                 //from x in db["asdf"]
-                //from y in db["cool"]
+                from y in db["cool"]
                 join x in db["other stuff"] on m["id"] equals x["MovieID"]
                 //join y in db["ymovies"] on x["MovieID"] equals y["id"] 
                 where m["movieid"] == id && m["title"] == "Batman Begins"
+                orderby m["stuff"] descending, x["y"]
                 //orderby m["thing"] descending
                 select new { m, x }).Where(p => p.m["key"] == "stuff").Where(a => a.x["bob"] == null);
-
-            var exp = ((LambdaExpression)org.bovinegenius.DataBeast.Expression.Translate.collapse_where(orig_exp)).Body; //org.bovinegenius.DataBeast.Expression.Translate.strip_quotes(orig_exp.Body);
+            
+            var exp = ((LambdaExpression)Translate.collapse_where(Eval.eval_tables(orig_exp))).Body; //Translate.strip_quotes(orig_exp.Body);
             Linq.Text = org.bovinegenius.DataBeast.PrintExpression.print_exp(exp);
 
             try {

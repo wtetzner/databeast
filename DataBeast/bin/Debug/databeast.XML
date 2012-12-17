@@ -254,6 +254,15 @@
 <member name="">
 
 </member>
+<member name="T:org.bovinegenius.DataBeast.Expression.Eval">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
 <member name="">
 
 </member>
@@ -380,9 +389,6 @@
 <member name="">
 
 </member>
-<member name="">
-
-</member>
 <member name="T:org.bovinegenius.DataBeast.Expression.Translate">
 
 </member>
@@ -396,6 +402,36 @@
 
 </member>
 <member name="T:org.bovinegenius.DataBeast.Expression.Walk">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:org.bovinegenius.DataBeast.Operators">
 
 </member>
 <member name="">
